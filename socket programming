@@ -1,0 +1,63 @@
+client.c
+
+
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+int main()
+{	
+	int s;
+	char msg[100];
+	struct sockaddr_in a;
+	
+	s=socket(AF_INET, SOCK_STREAM, 0);
+	
+	a.sin_family=AF_INET;
+	a.sin_port=htons(8080);
+	inet_pton(AF_INET, "127.0.0.1", &a.sin_addr);
+	
+	connect(s,(struct sockaddr *)&a, sizeof(a));
+	
+	write(s,"hello server..",12);
+	read(s,msg,sizeof(msg));
+	printf("server says: %s\n",msg);
+	close(s);
+	return 0;
+}
+
+server.c
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+
+
+int main()
+{
+	int s,c;
+	struct sockaddr_in a;
+	char msg[100];
+	
+	s=socket(AF_INET, SOCK_STREAM, 0);
+	a.sin_family=AF_INET;
+	a.sin_port=htons(8080);
+	a.sin_addr.s_addr=INADDR_ANY;
+	
+	bind(s,(struct sockaddr *)&a, sizeof(a));
+	listen(s,5);
+	
+	printf("waiting for client..");
+	
+	c=accept(s,NULL,NULL);
+		
+	read(c,msg, sizeof(msg));
+	printf("Client says: %s\n",msg);
+	write(c,"Hello client",12);
+	close(c);
+	close(s);
+	
+	return 0;
+	
+}
