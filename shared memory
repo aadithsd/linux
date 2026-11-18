@@ -1,0 +1,74 @@
+read.c
+
+#include<stdio.h>
+#include<sys/ipc.h>
+#include<string.h>
+#include<sys/shm.h>
+
+int main()
+{
+	int id;
+	char *p;
+	
+	id=shmget(1234, 1024, 0666);
+	if (id==-1)
+	{
+		perror("shmget");
+		return 1;
+	}
+	
+	p=shmat(id,NULL,0);
+	
+	if(p==(char *)-1)
+	{
+		perror("shmat");
+		return 1;
+		
+		
+	}
+	
+	printf("data: %s \n",p);
+	
+	shmdt(p);
+	
+	
+	shmctl(id,IPC_RMID,NULL);
+	return 0;
+}
+
+
+
+write.c
+
+#include<stdio.h>
+#include<sys/ipc.h>
+#include<sys/shm.h>
+#include<string.h>
+
+int main()
+{
+	int id;
+	char *p;
+	
+	id=shmget(1234, 1024, IPC_CREAT | 0666);
+	if(id==-1)
+	{
+		perror("shmget");
+		return 1;
+	}
+	
+	p=shmat(id,NULL,0);
+	
+	if (p==(char *)-1)
+	{
+		perror("shmat");
+		return 1;
+	}
+	
+	strcpy(p,"hello process");
+	printf("data written: %s\n",p);
+	shmdt(p);
+	
+	return 0;
+	
+}
